@@ -12,7 +12,7 @@ public class RobotTests
     [SetUp]
     public void SetupTest()
     {
-        this.molecules = = new int[] { 1, 2, 3, 4, 5 };
+        this.molecules = new int[] { 0, 0, 0, 0, 0 };
         this.robot = new Robot("START_POS", 0, 0, this.molecules);
     }
 
