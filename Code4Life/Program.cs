@@ -96,15 +96,15 @@ class Player
                     costE
                 };
 
-                if (ai.Samples.Any(s => s.Id == sampleId))
+                if (ai.Samples.DoesThisExistInBag(sampleId))
                 {
-                    var sample = ai.Samples.Single(s => s.Id == sampleId);
+                    var sample = ai.Samples.SingleSampleById(sampleId);
                     sample.CarriedBy = (Carried)carriedBy;
                 }
                 else
                 {
                     var sample = new Sample(sampleId, carriedBy, health, costNumbers);
-                    ai.Samples.Add(sample);
+                    ai.Samples.AddSample(sample);
                 }
             }
 
@@ -152,9 +152,9 @@ public class AI
         }
     }
 
-    private void ProduceMedicinesMode()
+    public Order ProduceMedicinesMode()
     {
-        if (this.Samples.Count(s => s.CarriedBy == Carried.Player) == 0)
+        if (this.Samples.NumberCarriedByPlayer() == 0)
         {
             var order = new Order()
             {
@@ -163,25 +163,28 @@ public class AI
             };
 
             this.Mode = Mode.SamplePickup;
-            this.OrderWriter(order);
+            return order;
         }
         else
         {
-            var sample = this.Samples.First(s => s.CarriedBy == Carried.Player);
+            var sample = this.Samples.FirstSampleCarriedByPlayer();
 
             var order = new Order()
             {
                 Type = OrderType.ConnectSample,
                 SampleId = sample.Id
             };
+
+            return order;
         }
     }
 
-    private void MoleculePickUpMode()
+    public Order MoleculePickUpMode()
     {      
         if (this.Player.Storage.AtCapacity())
         {
-            this.Mode = Mode.ProduceMedicines;            
+            this.Mode = Mode.ProduceMedicines;
+            return null;
         }
         else if (this.Player.Position == Position.Molecules)
         {
@@ -201,8 +204,7 @@ public class AI
                         Molecule = item
                     };
 
-                    this.OrderWriter(order);
-                    break;
+                    return order;                    
                 }
             }
         }
@@ -214,13 +216,15 @@ public class AI
                 Position = Position.Molecules
             };
 
-            this.OrderWriter(order);
+            return order;
         }
+
+        return null;
     }
 
     private void SetTotalCostOfCollectedSamples()
     {
-        var playerSamples = this.Samples.Where(s => s.CarriedBy == Carried.Player);
+        var playerSamples = this.Samples.AllSamplesCarriedByPlayer();
 
         foreach (var sample in playerSamples)
         {
@@ -232,9 +236,9 @@ public class AI
 
     }
 
-    private void SamplePickUpMode()
+    public Order SamplePickUpMode()
     {
-        if (this.Samples.Count(s => s.CarriedBy == Carried.Player) >= _sampleLimit)
+        if (this.Samples.IsFull())
         {
             this.Mode = Mode.MoleculePickup;
             this.SetTotalCostOfCollectedSamples();
@@ -244,7 +248,7 @@ public class AI
                 Position = Position.Molecules
             };
 
-            this.OrderWriter(order);
+            return order;
         }
         else if (this.Player.Position == Position.Diagnosis)
         {
@@ -258,7 +262,7 @@ public class AI
                     SampleId = sample.Id
                 };
 
-                this.OrderWriter(order);
+                return order;
             }
             else
             {
@@ -269,7 +273,7 @@ public class AI
                     Position = Position.Molecules
                 };
 
-                this.OrderWriter(order);
+                return order;
             }
         }
         else
@@ -280,16 +284,13 @@ public class AI
                 Position = Position.Diagnosis
             };
 
-            this.OrderWriter(order);
+            return order;
         }
     }
 
     private Sample DetermineSample()
     {
-        var sampleList = this.Samples
-            .Where(s => s.CarriedBy == Carried.Cloud)
-            .Where(s => s.Cost.TotalNumber() < this.Player.Storage.RemainingCapacity())
-            .OrderByDescending(s => s.MoleculeValue);
+        var sampleList = this.Samples.ListOfPossibleSamplesToTake(this.Player.Storage.RemainingCapacity());
 
         var sampleToTake = sampleList.FirstOrDefault();       
 
@@ -392,20 +393,10 @@ public class Sample
     }    
 }
 
-public class MoleculeBag : IDictionary<MoleculeType, int>
+public class MoleculeBag 
 {
     private Dictionary<MoleculeType, int> _molecules;
-    private const int moleculeLimit = 10;
-
-    public ICollection<MoleculeType> Keys => ((IDictionary<MoleculeType, int>)this._molecules).Keys;
-
-    public ICollection<int> Values => ((IDictionary<MoleculeType, int>)this._molecules).Values;
-
-    public int Count => ((IDictionary<MoleculeType, int>)this._molecules).Count;
-
-    public bool IsReadOnly => ((IDictionary<MoleculeType, int>)this._molecules).IsReadOnly;
-
-    public int this[MoleculeType key] { get => ((IDictionary<MoleculeType, int>)this._molecules)[key]; set => ((IDictionary<MoleculeType, int>)this._molecules)[key] = value; }
+    private const int moleculeLimit = 10;  
 
     public MoleculeBag()
     {
@@ -447,129 +438,61 @@ public class MoleculeBag : IDictionary<MoleculeType, int>
     public bool AtCapacity()
     {
         return this.TotalNumber() == moleculeLimit;
-    }
-
-    public bool ContainsKey(MoleculeType key)
-    {
-        return ((IDictionary<MoleculeType, int>)this._molecules).ContainsKey(key);
-    }
-
-    public void Add(MoleculeType key, int value)
-    {
-        ((IDictionary<MoleculeType, int>)this._molecules).Add(key, value);
-    }
-
-    public bool Remove(MoleculeType key)
-    {
-        return ((IDictionary<MoleculeType, int>)this._molecules).Remove(key);
-    }
-
-    public bool TryGetValue(MoleculeType key, out int value)
-    {
-        return ((IDictionary<MoleculeType, int>)this._molecules).TryGetValue(key, out value);
-    }
-
-    public void Add(KeyValuePair<MoleculeType, int> item)
-    {
-        ((IDictionary<MoleculeType, int>)this._molecules).Add(item);
-    }
-
-    public void Clear()
-    {
-        ((IDictionary<MoleculeType, int>)this._molecules).Clear();
-    }
-
-    public bool Contains(KeyValuePair<MoleculeType, int> item)
-    {
-        return ((IDictionary<MoleculeType, int>)this._molecules).Contains(item);
-    }
-
-    public void CopyTo(KeyValuePair<MoleculeType, int>[] array, int arrayIndex)
-    {
-        ((IDictionary<MoleculeType, int>)this._molecules).CopyTo(array, arrayIndex);
-    }
-
-    public bool Remove(KeyValuePair<MoleculeType, int> item)
-    {
-        return ((IDictionary<MoleculeType, int>)this._molecules).Remove(item);
-    }
-
-    public IEnumerator<KeyValuePair<MoleculeType, int>> GetEnumerator()
-    {
-        return ((IDictionary<MoleculeType, int>)this._molecules).GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IDictionary<MoleculeType, int>)this._molecules).GetEnumerator();
-    }
+    }   
 }
 
-public class SampleBag : IList<Sample>
+public class SampleBag
 {
     private List<Sample> _samples;
-    private const int sampleLimit = 3;
-
-    public Sample this[int index] { get => ((IList<Sample>)this._samples)[index]; set => ((IList<Sample>)this._samples)[index] = value; }
-
-    public int Count => ((IList<Sample>)this._samples).Count;
-
-    public bool IsReadOnly => ((IList<Sample>)this._samples).IsReadOnly;
+    private const int sampleLimit = 3;    
 
     public SampleBag()
     {
         this._samples = new List<Sample>();
     }
 
-    public void Add(Sample item)
+    public bool DoesThisExistInBag(int id)
     {
-        ((IList<Sample>)this._samples).Add(item);
+        return this._samples.Any(s => s.Id == id);
     }
 
-    public void Clear()
+    public Sample SingleSampleById(int id)
     {
-        ((IList<Sample>)this._samples).Clear();
+        return this._samples.SingleOrDefault(s => s.Id == id);
     }
 
-    public bool Contains(Sample item)
+    public Sample FirstSampleCarriedByPlayer()
     {
-        return ((IList<Sample>)this._samples).Contains(item);
+        return this._samples.FirstOrDefault(s => s.CarriedBy == Carried.Player);
     }
 
-    public void CopyTo(Sample[] array, int arrayIndex)
+    public IEnumerable<Sample> AllSamplesCarriedByPlayer()
     {
-        ((IList<Sample>)this._samples).CopyTo(array, arrayIndex);
+        return this._samples.Where(s => s.CarriedBy == Carried.Player);
     }
 
-    public IEnumerator<Sample> GetEnumerator()
+    public void AddSample(Sample sample)
     {
-        return ((IList<Sample>)this._samples).GetEnumerator();
+        this._samples.Add(sample);
     }
 
-    public int IndexOf(Sample item)
+    public int NumberCarriedByPlayer()
     {
-        return ((IList<Sample>)this._samples).IndexOf(item);
+        return this._samples.Count(s => s.CarriedBy == Carried.Player);
     }
 
-    public void Insert(int index, Sample item)
+    public bool IsFull()
     {
-        ((IList<Sample>)this._samples).Insert(index, item);
+        return this._samples.Count == sampleLimit;
     }
 
-    public bool Remove(Sample item)
+    public IEnumerable<Sample> ListOfPossibleSamplesToTake(int remainingCapacity)
     {
-        return ((IList<Sample>)this._samples).Remove(item);
-    }
-
-    public void RemoveAt(int index)
-    {
-        ((IList<Sample>)this._samples).RemoveAt(index);
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IList<Sample>)this._samples).GetEnumerator();
-    }
+        return this._samples
+            .Where(s => s.CarriedBy == Carried.Cloud)
+            .Where(s => s.Cost.TotalNumber() < remainingCapacity)
+            .OrderByDescending(s => s.MoleculeValue);
+    }    
 }
 
 public enum Position
