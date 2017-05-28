@@ -240,7 +240,7 @@ public class AI
 
     public Order SamplePickUpMode()
     {
-        if (this.Samples.IsFull())
+        if (this.Samples.IsPlayerAtCapacity())
         {
             this.Mode = Mode.MoleculePickup;
             this.SetTotalCostOfCollectedSamples();
@@ -511,9 +511,9 @@ public class SampleBag
         return this._samples.Count(s => s.CarriedBy == Carried.Player);
     }
 
-    public bool IsFull()
+    public bool IsPlayerAtCapacity()
     {
-        return this._samples.Count == sampleLimit;
+        return this.NumberCarriedByPlayer() == sampleLimit;
     }
 
     public IEnumerable<Sample> ListOfPossibleSamplesToTake(int remainingCapacity)
