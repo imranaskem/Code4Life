@@ -29,6 +29,29 @@ public class MoleculesBagTests
         {
             Assert.That(item.Value, Is.EqualTo(moleculeValues[(int)item.Key]));
         }
+    }    [Test]    public void UpdateSingleValueTest()
+    {
+        this.moleculeBag.UpdateSingleValue(MoleculeType.A, 2);
+        this.moleculeBag.UpdateSingleValue(MoleculeType.A, 2);
+
+        var molecule = this.moleculeBag.Single(s => s.Key == MoleculeType.A);
+
+        Assert.That(molecule.Value, Is.EqualTo(4));
+    }    [Test]    public void SetValuesToZeroTest()    {
+        this.moleculeBag.UpdateSingleValue(MoleculeType.A, 2);
+        this.moleculeBag.UpdateSingleValue(MoleculeType.A, 2);
+
+        this.moleculeBag.SetValuesToZero();
+
+        foreach (var item in this.moleculeBag)
+        {
+            Assert.That(item.Value, Is.EqualTo(0));
+        }
+    }    [Test]    public void GetValueOfKeyTest()
+    {
+        var value = this.moleculeBag.GetValueOfKey(MoleculeType.A);
+
+        Assert.That(value, Is.EqualTo(0));
     }
     [Test]
     public void UpdateMoleculeValuesExceptionTest()

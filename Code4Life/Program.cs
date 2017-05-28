@@ -192,9 +192,9 @@ public class AI
 
             foreach (var item in typeList)
             {
-                var playerMoleculeCount = this.Player.Storage.Single(s => s.Key == item).Value;
+                var playerMoleculeCount = this.Player.Storage.GetValueOfKey(item);
 
-                var sampleMoleculeNeeded = this.CostOfCarriedSamples.Single(s => s.Key == item).Value;
+                var sampleMoleculeNeeded = this.CostOfCarriedSamples.GetValueOfKey(item);
 
                 if (sampleMoleculeNeeded > playerMoleculeCount)
                 {
@@ -226,11 +226,13 @@ public class AI
     {
         var playerSamples = this.Samples.AllSamplesCarriedByPlayer();
 
+        this.CostOfCarriedSamples.SetValuesToZero();
+
         foreach (var sample in playerSamples)
         {
             foreach (var cost in sample.Cost)
             {
-                this.CostOfCarriedSamples[cost.Key] += cost.Value;
+                this.CostOfCarriedSamples.UpdateSingleValue(cost.Key, cost.Value);                
             }
         }
 
@@ -393,7 +395,7 @@ public class Sample
     }    
 }
 
-public class MoleculeBag 
+public class MoleculeBag : IEnumerable<KeyValuePair<MoleculeType, int>>
 {
     private Dictionary<MoleculeType, int> _molecules;
     private const int moleculeLimit = 10;  
@@ -425,6 +427,24 @@ public class MoleculeBag
         }
     }
 
+    public void SetValuesToZero()
+    {
+        foreach (var key in this._molecules.Keys.ToList())
+        {
+            this._molecules[key] = 0;
+        }
+    }
+
+    public void UpdateSingleValue(MoleculeType moleculeType, int value)
+    {
+        this._molecules[moleculeType] += value;
+    }
+
+    public int GetValueOfKey(MoleculeType moleculeType)
+    {
+        return this._molecules.Single(s => s.Key == moleculeType).Value;
+    }
+
     public int RemainingCapacity()
     {
         return moleculeLimit - this.TotalNumber();
@@ -438,7 +458,17 @@ public class MoleculeBag
     public bool AtCapacity()
     {
         return this.TotalNumber() == moleculeLimit;
-    }   
+    }
+
+    public IEnumerator<KeyValuePair<MoleculeType, int>> GetEnumerator()
+    {
+        return ((IEnumerable<KeyValuePair<MoleculeType, int>>)this._molecules).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable<KeyValuePair<MoleculeType, int>>)this._molecules).GetEnumerator();
+    }
 }
 
 public class SampleBag
