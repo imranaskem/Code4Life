@@ -99,7 +99,7 @@ class Player
                 if (ai.Samples.DoesThisExistInBag(sampleId))
                 {
                     var sample = ai.Samples.SingleSampleById(sampleId);
-                    sample.CarriedBy = (Carried)carriedBy;
+                    sample.UpdateSampleOwner((Carried)carriedBy);
                 }
                 else
                 {
@@ -393,6 +393,11 @@ public class Sample
         this.Cost = new MoleculeBag();
         this.Cost.UpdateMoleculeValues(costNumbers);
     }    
+
+    public void UpdateSampleOwner(Carried carriedby)
+    {
+        this.CarriedBy = carriedby;
+    }
 }
 
 public class MoleculeBag : IEnumerable<KeyValuePair<MoleculeType, int>>
