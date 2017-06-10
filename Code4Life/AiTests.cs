@@ -6,48 +6,48 @@ using NUnit.Framework;
 [TestFixture]
 public class AiTests
 {
-    private AI ai;
+    private Ai _ai;
 
     [SetUp]
     public void SetupAi()
     {
-        var robot = new Robot("START_POS", 0, 0, new int[] { 0, 0, 0, 0, 0 });
-        this.ai = new AI(robot);
+        var robot = new Robot("START_POS", 0, 0, new[] { 0, 0, 0, 0, 0 });
+        this._ai = new Ai(robot);
     }
 
     [Test]
     public void SetupTest()
     {
-        Assert.That(this.ai.Mode, Is.EqualTo(Mode.SamplePickup));
+        Assert.That(this._ai.Mode, Is.EqualTo(Mode.SamplePickup));
     }
 
     [Test]
     public void SamplePickUpModeAtCapacityTest()
     {
-        var sample = new Sample(0, 0, 10, new int[] { 1, 1, 1, 1, 0 });
-        ai.Samples.AddSample(sample);
+        var sample = new Sample(0, 0, 10, new[] { 1, 1, 1, 1, 0 });
+        _ai.Samples.AddSample(sample);
 
-        sample = new Sample(1, 0, 10, new int[] { 1, 1, 1, 1, 0 });
-        ai.Samples.AddSample(sample);
+        sample = new Sample(1, 0, 10, new[] { 1, 1, 1, 1, 0 });
+        _ai.Samples.AddSample(sample);
 
-        sample = new Sample(2, 0, 10, new int[] { 1, 1, 1, 1, 0 });
-        ai.Samples.AddSample(sample);
+        sample = new Sample(2, 0, 10, new[] { 1, 1, 1, 1, 0 });
+        _ai.Samples.AddSample(sample);
 
-        var order = ai.SamplePickUpMode();
+        var order = _ai.SamplePickUpMode();
 
         Assert.That(order.Type, Is.EqualTo(OrderType.Move));
         Assert.That(order.Position, Is.EqualTo(Position.Molecules));
-        Assert.That(ai.Mode, Is.EqualTo(Mode.MoleculePickup));
+        Assert.That(_ai.Mode, Is.EqualTo(Mode.MoleculePickup));
     }
 
     [Test]
     public void SamplePickUpModeInPositionHaveCapacityNullTest()
     {
-        ai.Player.Position = Position.Diagnosis;
+        _ai.Player.Position = Position.Diagnosis;
 
-        var order = ai.SamplePickUpMode();
+        var order = _ai.SamplePickUpMode();
 
-        Assert.That(ai.Mode, Is.EqualTo(Mode.MoleculePickup));
+        Assert.That(_ai.Mode, Is.EqualTo(Mode.MoleculePickup));
         Assert.That(order.Type, Is.EqualTo(OrderType.Move));
         Assert.That(order.Position, Is.EqualTo(Position.Molecules));
     }
@@ -55,18 +55,18 @@ public class AiTests
     [Test]
     public void SamplePickupModeInPositionHaveCapacityTest()
     {
-        var sample = new Sample(0, -1, 100, new int[] { 1, 1, 1, 1, 0 });
-        ai.Samples.AddSample(sample);
+        var sample = new Sample(0, -1, 100, new[] { 1, 1, 1, 1, 0 });
+        _ai.Samples.AddSample(sample);
 
-        sample = new Sample(1, -1, 10, new int[] { 1, 1, 1, 1, 0 });
-        ai.Samples.AddSample(sample);
+        sample = new Sample(1, -1, 10, new[] { 1, 1, 1, 1, 0 });
+        _ai.Samples.AddSample(sample);
 
-        sample = new Sample(2, -1, 10, new int[] { 1, 1, 1, 1, 0 });
-        ai.Samples.AddSample(sample);
+        sample = new Sample(2, -1, 10, new[] { 1, 1, 1, 1, 0 });
+        _ai.Samples.AddSample(sample);
 
-        ai.Player.Position = Position.Diagnosis;
+        _ai.Player.Position = Position.Diagnosis;
 
-        var order = ai.SamplePickUpMode();
+        var order = _ai.SamplePickUpMode();
 
         Assert.That(order.Type, Is.EqualTo(OrderType.ConnectSample));
         Assert.That(order.SampleId, Is.EqualTo(0));

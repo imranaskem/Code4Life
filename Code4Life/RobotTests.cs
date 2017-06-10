@@ -6,26 +6,26 @@ using NUnit.Framework;
 [TestFixture]
 public class RobotTests
 {
-    private int[] molecules;
-    private Robot robot;
+    private int[] _molecules;
+    private Robot _robot;
 
     [SetUp]
     public void SetupTest()
     {
-        this.molecules = new int[] { 0, 0, 0, 0, 0 };
-        this.robot = new Robot("START_POS", 0, 0, this.molecules);
+        this._molecules = new[] { 0, 0, 0, 0, 0 };
+        this._robot = new Robot("START_POS", 0, 0, this._molecules);
     }
 
     [Test]
     public void RobotSetup()
     {     
-        Assert.That(robot.Position, Is.EqualTo(Position.StartPos));
-        Assert.That(robot.Eta, Is.EqualTo(0));
-        Assert.That(robot.Score, Is.EqualTo(0));
+        Assert.That(_robot.Position, Is.EqualTo(Position.StartPos));
+        Assert.That(_robot.Eta, Is.EqualTo(0));
+        Assert.That(_robot.Score, Is.EqualTo(0));
 
-        foreach (var kvp in robot.Storage)
+        foreach (var kvp in _robot.Storage)
         {
-            Assert.That(kvp.Value, Is.EqualTo(molecules[(int)kvp.Key]));
+            Assert.That(kvp.Value, Is.EqualTo(_molecules[(int)kvp.Key]));
         }
     }
 }

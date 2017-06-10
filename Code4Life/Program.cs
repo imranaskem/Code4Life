@@ -4,51 +4,54 @@ using System.IO;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+// ReSharper disable All
 
 /**
  * Bring data on patient samples from the diagnosis machine to the laboratory with enough molecules to produce medicine!
  **/
-class Player
+[SuppressMessage("ReSharper", "UnusedParameter.Local")]
+internal class Player
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         string[] inputs;
-        int projectCount = int.Parse(Console.ReadLine());
-        for (int i = 0; i < projectCount; i++)
+        var projectCount = int.Parse(Console.ReadLine());
+        for (var i = 0; i < projectCount; i++)
         {
             inputs = Console.ReadLine().Split(' ');
-            int a = int.Parse(inputs[0]);
-            int b = int.Parse(inputs[1]);
-            int c = int.Parse(inputs[2]);
-            int d = int.Parse(inputs[3]);
-            int e = int.Parse(inputs[4]);
+            var a = int.Parse(inputs[0]);
+            var b = int.Parse(inputs[1]);
+            var c = int.Parse(inputs[2]);
+            var d = int.Parse(inputs[3]);
+            var e = int.Parse(inputs[4]);
         }
 
-        Robot player = new Robot("START_POS", 0, 0, new int[] { 0, 0, 0, 0, 0 });       
+        var player = new Robot("START_POS", 0, 0, new[] { 0, 0, 0, 0, 0 });
 
-        var ai = new AI(player);
+        var ai = new Ai(player);
 
         // game loop
         while (true)
         {
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 inputs = Console.ReadLine().Split(' ');
-                string target = inputs[0];
-                int eta = int.Parse(inputs[1]);
-                int score = int.Parse(inputs[2]);
-                int storageA = int.Parse(inputs[3]);
-                int storageB = int.Parse(inputs[4]);
-                int storageC = int.Parse(inputs[5]);
-                int storageD = int.Parse(inputs[6]);
-                int storageE = int.Parse(inputs[7]);
-                int expertiseA = int.Parse(inputs[8]);
-                int expertiseB = int.Parse(inputs[9]);
-                int expertiseC = int.Parse(inputs[10]);
-                int expertiseD = int.Parse(inputs[11]);
-                int expertiseE = int.Parse(inputs[12]);
+                var target = inputs[0];
+                var eta = int.Parse(inputs[1]);
+                var score = int.Parse(inputs[2]);
+                var storageA = int.Parse(inputs[3]);
+                var storageB = int.Parse(inputs[4]);
+                var storageC = int.Parse(inputs[5]);
+                var storageD = int.Parse(inputs[6]);
+                var storageE = int.Parse(inputs[7]);
+                var expertiseA = int.Parse(inputs[8]);
+                var expertiseB = int.Parse(inputs[9]);
+                var expertiseC = int.Parse(inputs[10]);
+                var expertiseD = int.Parse(inputs[11]);
+                var expertiseE = int.Parse(inputs[12]);
 
-                int[] storageNumbers = new int[5]
+                var storageNumbers = new int[5]
                 {
                     storageA,
                     storageB,
@@ -66,28 +69,28 @@ class Player
                 }
             }
             inputs = Console.ReadLine().Split(' ');
-            int availableA = int.Parse(inputs[0]);
-            int availableB = int.Parse(inputs[1]);
-            int availableC = int.Parse(inputs[2]);
-            int availableD = int.Parse(inputs[3]);
-            int availableE = int.Parse(inputs[4]);
-            int sampleCount = int.Parse(Console.ReadLine());
+            var availableA = int.Parse(inputs[0]);
+            var availableB = int.Parse(inputs[1]);
+            var availableC = int.Parse(inputs[2]);
+            var availableD = int.Parse(inputs[3]);
+            var availableE = int.Parse(inputs[4]);
+            var sampleCount = int.Parse(Console.ReadLine());
 
-            for (int i = 0; i < sampleCount; i++)
+            for (var i = 0; i < sampleCount; i++)
             {
                 inputs = Console.ReadLine().Split(' ');
-                int sampleId = int.Parse(inputs[0]);
-                int carriedBy = int.Parse(inputs[1]);
-                int rank = int.Parse(inputs[2]);
-                string expertiseGain = inputs[3];
-                int health = int.Parse(inputs[4]);
-                int costA = int.Parse(inputs[5]);
-                int costB = int.Parse(inputs[6]);
-                int costC = int.Parse(inputs[7]);
-                int costD = int.Parse(inputs[8]);
-                int costE = int.Parse(inputs[9]);
+                var sampleId = int.Parse(inputs[0]);
+                var carriedBy = int.Parse(inputs[1]);
+                var rank = int.Parse(inputs[2]);
+                var expertiseGain = inputs[3];
+                var health = int.Parse(inputs[4]);
+                var costA = int.Parse(inputs[5]);
+                var costB = int.Parse(inputs[6]);
+                var costC = int.Parse(inputs[7]);
+                var costD = int.Parse(inputs[8]);
+                var costE = int.Parse(inputs[9]);
 
-                int[] costNumbers = new int[5]
+                var costNumbers = new int[5]
                 {
                     costA,
                     costB,
@@ -116,17 +119,17 @@ class Player
     }
 }
 
-public class AI
+public class Ai
 {
-    private const int _sampleLimit = 3;
-    private const int _moleculeLimit = 10;
+    private const int SampleLimit = 3;
+    private const int MoleculeLimit = 10;
 
     public Robot Player { get; set; }
     public SampleBag Samples { get; set; }
     public Mode Mode { get; set; }
     public MoleculeBag CostOfCarriedSamples { get; set; }
 
-    public AI(Robot robot)
+    public Ai(Robot robot)
     {
         this.Player = robot;
         this.Samples = new SampleBag();
@@ -301,23 +304,23 @@ public class AI
 
     private void OrderWriter(Order order)
     {
-        var orderString = string.Empty;
+        string orderString;
 
         switch (order.Type)
         {
             case OrderType.Move:
                 orderString = "GOTO " +
-                    Enum.GetName(typeof(Position), order.Position).ToString().ToUpper();
+                    order.Position.ToString().ToUpper();
                 break;
             case OrderType.ConnectSample:
                 orderString = $"CONNECT {order.SampleId}";
                 break;
             case OrderType.ConnectMolecule:
                 orderString = "CONNECT " +
-                    Enum.GetName(typeof(MoleculeType), order.Molecule).ToString().ToUpper();
+                    order.Molecule.ToString().ToUpper();
                 break;
             default:
-                throw new ArgumentOutOfRangeException("typeOfOrder", "Argument is not between 0-2");
+                throw new ArgumentOutOfRangeException(nameof(order), "Argument is not between 0-2");
         }
 
         Console.WriteLine(orderString);
@@ -365,7 +368,7 @@ public class Robot
                 this.Position = Position.StartPos;
                 break;
             default:
-                throw new ArgumentOutOfRangeException("target is out of range");
+                throw new ArgumentOutOfRangeException(nameof(target));
         }
     }    
 }
@@ -402,8 +405,8 @@ public class Sample
 
 public class MoleculeBag : IEnumerable<KeyValuePair<MoleculeType, int>>
 {
-    private Dictionary<MoleculeType, int> _molecules;
-    private const int moleculeLimit = 10;  
+    private readonly Dictionary<MoleculeType, int> _molecules;
+    private const int MoleculeLimit = 10;  
 
     public MoleculeBag()
     {
@@ -421,7 +424,7 @@ public class MoleculeBag : IEnumerable<KeyValuePair<MoleculeType, int>>
     {
         var total = moleculeValues.Sum();
 
-        if (total > moleculeLimit)
+        if (total > MoleculeLimit)
         {
             throw new ArgumentOutOfRangeException("moleculeValues", "Too many molecules!");
         }
@@ -452,7 +455,7 @@ public class MoleculeBag : IEnumerable<KeyValuePair<MoleculeType, int>>
 
     public int RemainingCapacity()
     {
-        return moleculeLimit - this.TotalNumber();
+        return MoleculeLimit - this.TotalNumber();
     }
 
     public int TotalNumber()
@@ -462,7 +465,7 @@ public class MoleculeBag : IEnumerable<KeyValuePair<MoleculeType, int>>
 
     public bool AtCapacity()
     {
-        return this.TotalNumber() == moleculeLimit;
+        return this.TotalNumber() == MoleculeLimit;
     }
 
     public IEnumerator<KeyValuePair<MoleculeType, int>> GetEnumerator()
@@ -478,8 +481,8 @@ public class MoleculeBag : IEnumerable<KeyValuePair<MoleculeType, int>>
 
 public class SampleBag
 {
-    private List<Sample> _samples;
-    private const int sampleLimit = 3;    
+    private readonly List<Sample> _samples;
+    private const int SampleLimit = 3;    
 
     public SampleBag()
     {
@@ -518,7 +521,7 @@ public class SampleBag
 
     public bool IsPlayerAtCapacity()
     {
-        return this.NumberCarriedByPlayer() == sampleLimit;
+        return this.NumberCarriedByPlayer() == SampleLimit;
     }
 
     public IEnumerable<Sample> ListOfPossibleSamplesToTake(int remainingCapacity)
